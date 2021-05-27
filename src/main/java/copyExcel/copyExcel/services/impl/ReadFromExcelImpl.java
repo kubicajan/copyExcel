@@ -29,60 +29,66 @@ public class ReadFromExcelImpl implements ReadFromExcel {
     //reading from file
     final private String READ_FROM_FILE = "202104_MMR FY2021_EUR.xlsx";
 
-    final private String START_READING_FROM_CELL_COORDINATES = "AP12";
-    final private String STOP_READING_AT_CELL_COORDINATE = "BA91";
+    final private String START_FROM_CELL_COORDINATES = "AP12";
+    final private String STOP_AT_CELL_COORDINATE = "BA91";
+
+    final private String ADDITIONAL_START_CELL_COORDINATES = "AP1067";
+    final private String ADDITIONAL_STOP_CELL_COORDINATES = "BA1070";
+
+    private XSSFSheet sheet;
+
+    //results from all sheets
+    private Map<SheetSpecifics, ArrayList<FYResult>> allResults;
+    private ArrayList<FYResult> results = new ArrayList<>();
+
 
     private final WriteToExcel writeToExcel;
 
-    private XSSFWorkbook workbook;
-    private XSSFSheet sheet;
-    //results from all sheets
-    private Map<SheetSpecifics, ArrayList<FYResult>> allResults;
-
-
     @EventListener(ApplicationReadyEvent.class)
     public void process() {
-        merge();
-    }
-
-    private void merge() {
         log.info("Starting to read from... " + READ_FROM_FILE);
         readFromFirstExcel();
         writeToExcel.process(allResults);
     }
 
-
     private void readFromFirstExcel() {
         try {
             //opening the file
             FileInputStream file = new FileInputStream(new File("../" + READ_FROM_FILE));
-            workbook = new XSSFWorkbook(file);
+            XSSFWorkbook workbook = new XSSFWorkbook(file);
             sheet = workbook.getSheetAt(2);
 
-            //setting boundaries to know the scope of reading
-            CellAddress startCellAddress = new CellAddress(START_READING_FROM_CELL_COORDINATES);
-            CellAddress stopCellAddress = new CellAddress(STOP_READING_AT_CELL_COORDINATE);
-            Row tmpRow = sheet.getRow(startCellAddress.getRow());
+            //define border cells
+            CellAddress startCellAddress = new CellAddress(START_FROM_CELL_COORDINATES);
+            CellAddress stopCellAddress = new CellAddress(STOP_AT_CELL_COORDINATE);
+            CellAddress additionalStartCellAddress = new CellAddress(ADDITIONAL_START_CELL_COORDINATES);
+            CellAddress additionalStopCellAddress = new CellAddress(ADDITIONAL_STOP_CELL_COORDINATES);
 
-            //initiating array list to save the cell values to
-            ArrayList<FYResult> results = new ArrayList<>();
+            //initiating collections to save the cell values to
             allResults = new HashMap<>();
+            results = new ArrayList<>();
 
-            //while the current row number is lower than the final row, read and save cell values
-            while (tmpRow.getRowNum() <= stopCellAddress.getRow()) {
-                results.add(buildFYResult(tmpRow, startCellAddress.getColumn()));
-
-                //set next row as the current one and continue loop
-                tmpRow = sheet.getRow(tmpRow.getRowNum() + 1);
-            }
-            SheetSpecifics sheetSpecifics = new SheetSpecifics("FY20_Actuals", "YL_CZ");
-            SheetSpecifics sheetSpecifics2 = new SheetSpecifics("FY20_Actuals", "YL_ES");
-            allResults.put(sheetSpecifics, results);
-            allResults.put(sheetSpecifics2, results);
+            //save the data
+            saveData(sheet.getRow(startCellAddress.getRow()), startCellAddress, stopCellAddress);
+            saveData(sheet.getRow(additionalStartCellAddress.getRow()), additionalStartCellAddress, additionalStopCellAddress);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void saveData(Row tmpRow, CellAddress startAddress, CellAddress stopAddress) {
+
+        //while the current row number is lower than the final row, read and save cell values
+        while (tmpRow.getRowNum() <= stopAddress.getRow()) {
+            results.add(buildFYResult(tmpRow, startAddress.getColumn()));
+
+            //set next row as the current one and continue loop
+            tmpRow = sheet.getRow(tmpRow.getRowNum() + 1);
+        }
+
+        SheetSpecifics sheetSpecifics = new SheetSpecifics("FY20_Actuals", "YL_CZ");
+        allResults.put(sheetSpecifics, results);
     }
 
     private FYResult buildFYResult(Row row, int address) {
