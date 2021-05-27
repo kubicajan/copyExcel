@@ -1,5 +1,5 @@
 package copyExcel.copyExcel.services;
 
-public interface MergeExcels {
+public interface ReadFromExcel {
     void process();
 }
