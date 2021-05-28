@@ -52,6 +52,7 @@ public class WriteToExcelImpl implements WriteToExcel {
     private void writeToSecondExcel(ArrayList<FYResult> resultList) {
         int counter = 0;
         firstFound = -1;
+        rowCounter = 2;
         for (FYResult result : resultList) {
             createCell(result.getJanuary(), counter, filterRow());
             createCell(result.getFebruary(), counter, filterRow());
@@ -132,12 +133,12 @@ public class WriteToExcelImpl implements WriteToExcel {
         while (!measureCell.equals(sheetSpecifics.getMeasure()) ||
                 !OPCOCell.equals(sheetSpecifics.getOpco())
         ) {
-            firstFound = rowCounter;
             tmpRow = sheet.getRow(startCellAddress.getRow() + rowCounter);
             measureCell = tmpRow.getCell(MEASURE_CELL_POSITION_IN_ROW).toString();
             OPCOCell = tmpRow.getCell(OPCO_CELL_POSITION_IN_ROW).toString();
-            rowCounter++;
+            rowCounter++; //todo: here it might be possible to make it so it skips the whole stack, would be more efficient than going one by one.
         }
+        firstFound = rowCounter;
         return tmpRow;
     }
 
