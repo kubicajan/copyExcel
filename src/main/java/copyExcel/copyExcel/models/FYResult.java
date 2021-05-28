@@ -18,4 +18,8 @@ public class FYResult {
     private String october;
     private String november;
     private String december;
+
+    public int getNumberOfAttributes() {
+        return getClass().getDeclaredFields().length;
+    }
 }

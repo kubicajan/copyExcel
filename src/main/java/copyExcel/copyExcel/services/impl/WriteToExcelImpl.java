@@ -34,64 +34,39 @@ public class WriteToExcelImpl implements WriteToExcel {
 
     private XSSFWorkbook workbook;
     private XSSFSheet sheet;
-    //results from one sheet
-    private Map<SheetSpecifics, ArrayList<FYResult>> allResults;
-
-
     private int rowCounter;
-    private int firstFound;
-    private SheetSpecifics sheetSpecifics;
 
+    //amount of attributes in FYResult is the same as amount of lines that are skipped when filtering throu rows.
+    private int numberOfAttributesInFYResult;
+
+    private Map<SheetSpecifics, ArrayList<FYResult>> allResults;
+    private SheetSpecifics sheetSpecifics;
     private CellAddress startCellAddress = new CellAddress(START_WRITING_FROM_CELL_COORDINATES);
 
-
-    // loop through all results saved in list when reading the first file (only one sheet per call)
-    // rows and columns needed to be switched, so :
-    // counter adds to the column number every time there is a new result
-    // filterRow() sends information about new line
-    private void writeToSecondExcel(ArrayList<FYResult> resultList) {
-        int counter = 0;
-        firstFound = -1;
-        rowCounter = 2;
-        for (FYResult result : resultList) {
-            createCell(result.getJanuary(), counter, filterRow());
-            createCell(result.getFebruary(), counter, filterRow());
-            createCell(result.getMarch(), counter, filterRow());
-            createCell(result.getApril(), counter, filterRow());
-            createCell(result.getMay(), counter, filterRow());
-            createCell(result.getJune(), counter, filterRow());
-            createCell(result.getJuly(), counter, filterRow());
-            createCell(result.getAugust(), counter, filterRow());
-            createCell(result.getSeptember(), counter, filterRow());
-            createCell(result.getOctober(), counter, filterRow());
-            createCell(result.getNovember(), counter, filterRow());
-            createCell(result.getDecember(), counter, filterRow());
-            counter++;
-            rowCounter = firstFound;
-        }
-    }
-
     public void process(Map<SheetSpecifics, ArrayList<FYResult>> results) {
+        init();
         allResults = results;
         log.info("Reading successful!");
         log.info("Writing to... " + WRITE_TO_FILE);
-        openSecondExcel();
+        openExcel();
 
         log.info("Writing successful!");
         log.info("Process finished.");
     }
 
-    private void openSecondExcel() {
+    private void openExcel() {
         try {
             //open the file for writing
             FileInputStream file = new FileInputStream(new File("../" + WRITE_TO_FILE));
             workbook = new XSSFWorkbook(file);
+            //todo: change to dynamically found sheetindex
             sheet = workbook.getSheetAt(23);
+
 
             for (Map.Entry<SheetSpecifics, ArrayList<FYResult>> resultList : allResults.entrySet()
             ) {
                 sheetSpecifics = resultList.getKey();
-                writeToSecondExcel(resultList.getValue());
+                writeToExcel(resultList.getValue());
             }
             file.close();
 
@@ -105,40 +80,71 @@ public class WriteToExcelImpl implements WriteToExcel {
         }
     }
 
-    //creating cells and setting their values
-    private void createCell(String result, int counter, Row tmpRow) {
-        int column = startCellAddress.getColumn();
-        Cell cell = tmpRow.createCell(column + counter);
-        cell.setCellValue(result);
+    private void init() {
+        FYResult r = FYResult.builder().build();
+        numberOfAttributesInFYResult = r.getNumberOfAttributes();
     }
 
-    // function returns a new row that matches the filters.
-    // When new list is being processed, firstFound starts with value -1 and the function iterates until it founds a
-    // row that suits the filters.
-    // Then it sets this row as base point (firstFound = rowCounter) and until the end of the list it uses this value
-    // to calculate the appropriate rows.
-    private Row filterRow() {
+
+    // loop through all results saved in list when reading the first file (only one sheet per call)
+    // rows and columns needed to be switched, so :
+    // counter adds to the column number every time there is a new result
+    // filterRow() sends information about new line
+    private void writeToExcel(ArrayList<FYResult> resultList) {
+        int counter = 0;
+        int firstBatchRowNumber;
+        Row firstBatchRow;
+        int columnNumber;
+
+        for (FYResult result : resultList) {
+            rowCounter = 0;
+            firstBatchRow = filterRows();
+            firstBatchRowNumber = firstBatchRow.getRowNum();
+            columnNumber = startCellAddress.getColumn() + counter;
+
+            createCell(result.getJanuary(), columnNumber, getNextRow(firstBatchRowNumber));
+            createCell(result.getFebruary(), columnNumber, getNextRow(firstBatchRowNumber));
+            createCell(result.getMarch(), columnNumber, getNextRow(firstBatchRowNumber));
+            createCell(result.getApril(), columnNumber, getNextRow(firstBatchRowNumber));
+            createCell(result.getMay(), columnNumber, getNextRow(firstBatchRowNumber));
+            createCell(result.getJune(), columnNumber, getNextRow(firstBatchRowNumber));
+            createCell(result.getJuly(), columnNumber, getNextRow(firstBatchRowNumber));
+            createCell(result.getAugust(), columnNumber, getNextRow(firstBatchRowNumber));
+            createCell(result.getSeptember(), columnNumber, getNextRow(firstBatchRowNumber));
+            createCell(result.getOctober(), columnNumber, getNextRow(firstBatchRowNumber));
+            createCell(result.getNovember(), columnNumber, getNextRow(firstBatchRowNumber));
+            createCell(result.getDecember(), columnNumber, getNextRow(firstBatchRowNumber));
+            counter++;
+        }
+    }
+
+    private Row filterRows() {
         Row tmpRow = null;
         String measureCell = "";
         String OPCOCell = "";
+        int rowCounter = 0;
 
-        // when first row was found it no longer needs to look for others as the excel file is sorted
-        if (firstFound != -1) {
-            tmpRow = sheet.getRow(startCellAddress.getRow() + firstFound + (rowCounter - firstFound));
-            rowCounter++;
-            return tmpRow;
-        }
 
-        //filtering until the start of a batch of rows is found
         while (!measureCell.equals(sheetSpecifics.getMeasure()) ||
                 !OPCOCell.equals(sheetSpecifics.getOpco())
         ) {
             tmpRow = sheet.getRow(startCellAddress.getRow() + rowCounter);
             measureCell = tmpRow.getCell(MEASURE_CELL_POSITION_IN_ROW).toString();
             OPCOCell = tmpRow.getCell(OPCO_CELL_POSITION_IN_ROW).toString();
-            rowCounter++; //todo: here it might be possible to make it so it skips the whole stack, would be more efficient than going one by one.
+            rowCounter = rowCounter + numberOfAttributesInFYResult;
         }
-        firstFound = rowCounter;
+        return tmpRow;
+    }
+
+    //creating cells and setting their values
+    private void createCell(String result, int columnNumber, Row tmpRow) {
+        Cell cell = tmpRow.createCell(columnNumber);
+        cell.setCellValue(result);
+    }
+
+    private Row getNextRow(int rowNumber) {
+        Row tmpRow = sheet.getRow(rowNumber + rowCounter);
+        rowCounter++;
         return tmpRow;
     }
 
