@@ -28,8 +28,7 @@ public class WriteToExcelImpl implements WriteToExcel {
 
     final private String WRITE_TO_FILE = "MMR FY2020_EUR.xlsx";
 
-    //the result for MMR2 needs to be flipped horizontally, FY21 does not need to be flipped
-
+    // the result for MMR2 needs to be flipped horizontally, FY21 does not need to be flipped
     final private String MMR_2_SHEET_NAME = "MMR_2";
     final private String FY21_SHEET_NAME = "FY21";
 
@@ -43,17 +42,23 @@ public class WriteToExcelImpl implements WriteToExcel {
     private Sheet sheet;
     private int rowCounter;
 
-    //amount of attributes in FYResult is the same as amount of lines that are skipped when filtering throu rows.
-    private int numberOfAttributesInFYResult;
-    private int numberOfFyResults;
+    /**
+     * the amount of attributes in FYResult is the same as amount of lines that are skipped when filtering through rows (flipped writing)
+     */
+    private int amountOfAttributesInFYResult;
+
+    /**
+     * The amount of results is the same as the amount of lines skipped when filtering rows (normal writing)
+     */
+    private int amountOfFyResults;
 
     private Map<SheetSpecifics, ArrayList<FYResult>> allResults;
     private SheetSpecifics sheetSpecifics;
     private CellAddress startCellAddress;
 
     public void process(Map<SheetSpecifics, ArrayList<FYResult>> results) {
-        allResults = results;
-        init();
+        init(results);
+
         log.info("Reading successful!");
         log.info("Writing to... " + WRITE_TO_FILE);
         openExcel();
@@ -62,13 +67,88 @@ public class WriteToExcelImpl implements WriteToExcel {
         log.info("Process finished.");
     }
 
-    private void writeIntoFY21(ArrayList<FYResult> resultList) {
+
+    private void init(Map<SheetSpecifics, ArrayList<FYResult>> results) {
+        allResults = results;
+
+        FYResult r = FYResult.builder().build();
+        amountOfAttributesInFYResult = r.getNumberOfAttributes();
+
+        Map.Entry<SheetSpecifics, ArrayList<FYResult>> entry = results.entrySet().iterator().next();
+        ArrayList<FYResult> value = entry.getValue();
+        amountOfFyResults = value.size();
+    }
+
+    /**
+     * Method opens file for writing and initiates the process by calling filterSheets()
+     */
+    private void openExcel() {
+        try {
+            FileInputStream file = new FileInputStream(new File("../" + WRITE_TO_FILE));
+            workbook = new XSSFWorkbook(file);
+
+            filterSheets();
+
+            file.close();
+
+            FileOutputStream outputStream = new FileOutputStream("../" + WRITE_TO_FILE);
+            workbook.write(outputStream);
+            workbook.close();
+
+        } catch (
+                IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method goes through all sheets in workbook and filters them. Then calls method decide() for each value saved
+     * in results.
+     */
+    private void filterSheets() {
+        for (Sheet tmpSheet : workbook) {
+            if (!tmpSheet.getSheetName().equals(MMR_2_SHEET_NAME) && !tmpSheet.getSheetName().equals(FY21_SHEET_NAME)) {
+                continue;
+            }
+
+            sheet = tmpSheet;
+            for (Map.Entry<SheetSpecifics, ArrayList<FYResult>> resultList : allResults.entrySet()) {
+                sheetSpecifics = resultList.getKey();
+                decide(resultList.getValue());
+            }
+        }
+    }
+
+    /**
+     * Method decided which method of writing should be used for each entry
+     *
+     * @param resultList List with FYResults.
+     */
+    private void decide(ArrayList<FYResult> resultList) {
+        switch (sheet.getSheetName()) {
+            case MMR_2_SHEET_NAME:
+                startCellAddress = new CellAddress(START_WRITING_FROM_CELL_COORDINATES_MMR_2);
+                writeIntoSheetHorizontally(resultList);
+                break;
+            case FY21_SHEET_NAME:
+                startCellAddress = new CellAddress(START_WRITING_FROM_CELL_COORDINATES_FY21);
+                writeIntoSheetLinearly(resultList);
+                break;
+        }
+    }
+
+
+    /**
+     * For each result in resultList, createCell() is called. Parameters sent ensure linear writing, each
+     * result represents one row
+     */
+    private void writeIntoSheetLinearly(ArrayList<FYResult> resultList) {
         Row tmpRow;
         int columnNumber;
         int counter = 0;
 
         for (FYResult result : resultList) {
-            tmpRow = sheet.getRow(filterRows(numberOfFyResults).getRowNum() + counter);
+            tmpRow = sheet.getRow(filterRows(amountOfFyResults).getRowNum() + counter);
             columnNumber = startCellAddress.getColumn();
 
             createCell(result.getJanuary(), columnNumber, tmpRow);
@@ -85,69 +165,14 @@ public class WriteToExcelImpl implements WriteToExcel {
             createCell(result.getDecember(), columnNumber + 11, tmpRow);
             counter++;
         }
-
-    }
-
-    private void decide(ArrayList<FYResult> resultList) {
-        switch (sheet.getSheetName()) {
-            case MMR_2_SHEET_NAME:
-//                startCellAddress = new CellAddress(START_WRITING_FROM_CELL_COORDINATES_MMR_2);
-//                writeToExcel(resultList);
-                break;
-            case FY21_SHEET_NAME:
-                startCellAddress = new CellAddress(START_WRITING_FROM_CELL_COORDINATES_FY21);
-                writeIntoFY21(resultList);
-                break;
-        }
-    }
-
-    private void openExcel() {
-        try {
-            //open the file for writing
-            FileInputStream file = new FileInputStream(new File("../" + WRITE_TO_FILE));
-            workbook = new XSSFWorkbook(file);
-
-            for (Sheet tmpSheet : workbook) {
-                if (!tmpSheet.getSheetName().equals(MMR_2_SHEET_NAME) &&
-                        !tmpSheet.getSheetName().equals(FY21_SHEET_NAME)
-                ) {
-                    continue;
-                }
-                sheet = tmpSheet;
-                for (Map.Entry<SheetSpecifics, ArrayList<FYResult>> resultList : allResults.entrySet()
-                ) {
-                    numberOfFyResults = resultList.getValue().size();
-                    sheetSpecifics = resultList.getKey();
-                    //decide
-                    decide(resultList.getValue());
-                }
-            }
-
-            file.close();
-
-            //write to the file
-            FileOutputStream outputStream = new FileOutputStream("../" + WRITE_TO_FILE);
-            workbook.write(outputStream);
-            workbook.close();
-
-        } catch (
-                IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    private void init() {
-        FYResult r = FYResult.builder().build();
-        numberOfAttributesInFYResult = r.getNumberOfAttributes();
     }
 
 
-    // loop through all results saved in list when reading the first file (only one sheet per call)
-    // rows and columns needed to be switched, so :
-    // counter adds to the column number every time there is a new result
-    // filterRow() sends information about new line
-    private void writeToExcel(ArrayList<FYResult> resultList) {
+    /**
+     * For each result in resultList, createCell() is called. Parameters sent ensure horizontal writing. Each result
+     * represents one column.
+     */
+    private void writeIntoSheetHorizontally(ArrayList<FYResult> resultList) {
         int counter = 0;
         int firstBatchRowNumber;
         Row firstBatchRow;
@@ -155,7 +180,7 @@ public class WriteToExcelImpl implements WriteToExcel {
 
         for (FYResult result : resultList) {
             rowCounter = 0;
-            firstBatchRow = filterRows(numberOfAttributesInFYResult);
+            firstBatchRow = filterRows(amountOfAttributesInFYResult);
             firstBatchRowNumber = firstBatchRow.getRowNum();
             columnNumber = startCellAddress.getColumn() + counter;
 
@@ -175,12 +200,18 @@ public class WriteToExcelImpl implements WriteToExcel {
         }
     }
 
+    /**
+     * Method filters through cells in sheet and returns first row that fits the criteria. As the excel file is sorted,
+     * this allows us to skip batches of data and return only the first row of the batch.
+     *
+     * @param skipBy the amount of rows contained in one batch, differs for horizontal and vertical writing.
+     * @return first row found that fits criteria.
+     */
     private Row filterRows(int skipBy) {
         Row tmpRow = null;
         String measureCell = "";
         String OPCOCell = "";
         int rowCounter = 0;
-
 
         while (!measureCell.equals(sheetSpecifics.getMeasure()) ||
                 !OPCOCell.equals(sheetSpecifics.getOpco())
@@ -193,12 +224,25 @@ public class WriteToExcelImpl implements WriteToExcel {
         return tmpRow;
     }
 
-    //creating cells and setting their values
+
+    /**
+     * Helper class for creating classes.
+     *
+     * @param result       will be written as a value for newly created row
+     * @param columnNumber Column number where new cell will be created
+     * @param tmpRow       Row where new cell will be created
+     */
     private void createCell(String result, int columnNumber, Row tmpRow) {
         Cell cell = tmpRow.createCell(columnNumber);
         cell.setCellValue(result);
     }
 
+    /**
+     * Helper method for horizontal writing, fetches row one higher every time it gets called.
+     *
+     * @param rowNumber row number
+     * @return returns new row
+     */
     private Row getNextRowIncrementing(int rowNumber) {
         Row tmpRow = sheet.getRow(rowNumber + rowCounter);
         rowCounter++;

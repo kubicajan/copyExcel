@@ -37,9 +37,12 @@ public class ReadFromExcelImpl implements ReadFromExcel {
 
     final private String MEASURE = "FY21_Actuals";
 
-    //there is a lot of hidden sheets, the ones that we are interested in are named the same as  OPCO cells
-    //from the second file
-    private  final Set<String> ACCEPTED_SHEET_NAMES = Set.of(
+
+    /**
+     * To not load hidden sheets, the ones that we are interested in are in the set. They are named the same as OPCO cells,
+     * which are used to filter while writing to file.
+     */
+    private final Set<String> ACCEPTED_SHEET_NAMES = Set.of(
             "YL_BX",
             "YL_CZ",
             "YL_DE",
@@ -54,69 +57,89 @@ public class ReadFromExcelImpl implements ReadFromExcel {
             "YL_UK");
 
     private Sheet sheet;
-    private String sheetName;
+    private String standardizedSheetName;
 
-    //results from all sheets
     private Map<SheetSpecifics, ArrayList<FYResult>> allResults;
-    //result from single sheet
-    private ArrayList<FYResult> results = new ArrayList<>();
+    private ArrayList<FYResult> results;
 
+    private CellAddress startCellAddress;
+    private CellAddress stopCellAddress;
+
+    private CellAddress additionalStartCellAddress;
+    private CellAddress additionalStopCellAddress;
 
     private final WriteToExcel writeToExcel;
 
     @EventListener(ApplicationReadyEvent.class)
     public void process() {
         log.info("Starting to read from... " + READ_FROM_FILE);
-        readFromFirstExcel();
+        init();
+        openFile();
         writeToExcel.process(allResults);
     }
 
-    private void readFromFirstExcel() {
-        try {
-            //define border cells
-            CellAddress startCellAddress = new CellAddress(START_FROM_CELL_COORDINATES);
-            CellAddress stopCellAddress = new CellAddress(STOP_AT_CELL_COORDINATE);
-            CellAddress additionalStartCellAddress = new CellAddress(ADDITIONAL_START_CELL_COORDINATES);
-            CellAddress additionalStopCellAddress = new CellAddress(ADDITIONAL_STOP_CELL_COORDINATES);
+    private void init() {
+        allResults = new HashMap<>();
 
-            //opening the file
+        startCellAddress = new CellAddress(START_FROM_CELL_COORDINATES);
+        stopCellAddress = new CellAddress(STOP_AT_CELL_COORDINATE);
+
+        additionalStartCellAddress = new CellAddress(ADDITIONAL_START_CELL_COORDINATES);
+        additionalStopCellAddress = new CellAddress(ADDITIONAL_STOP_CELL_COORDINATES);
+    }
+
+
+    /**
+     * Method opens the file and initiates reading by calling readFile();
+     */
+    private void openFile() {
+        try {
             FileInputStream file = new FileInputStream(new File("../" + READ_FROM_FILE));
             XSSFWorkbook workbook = new XSSFWorkbook(file);
 
-            allResults = new HashMap<>();
+            readFile(workbook);
 
-            //iterate through all sheets
-            for (Sheet tmpSheet : workbook) {
-                String tmpSheetName = tmpSheet.getSheetName().toUpperCase().replace("-", "_");
-                //check if sheet name is in the set of accepted names. If not, skip.
-                if (!ACCEPTED_SHEET_NAMES.contains(tmpSheetName)) {
-                    continue;
-                }
-                sheetName = tmpSheetName;
-                sheet = tmpSheet;
-
-                //initiating collections to save the cell values to
-                results = new ArrayList<>();
-
-                //save the data
-                saveData(sheet.getRow(startCellAddress.getRow()), startCellAddress, stopCellAddress);
-                saveData(sheet.getRow(additionalStartCellAddress.getRow()), additionalStartCellAddress, additionalStopCellAddress);
-            }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void saveData(Row tmpRow, CellAddress startAddress, CellAddress stopAddress) {
 
-        //while the current row number is lower than the final row, read and save cell values
+    /**
+     * Method iterates through all sheets. Data from sheets that passed the filter are saved through method saveData().
+     *
+     * @param workbook current workbook
+     */
+    private void readFile(XSSFWorkbook workbook) {
+        String tmpSheetName;
+
+        for (Sheet tmpSheet : workbook) {
+            results = new ArrayList<>();
+            tmpSheetName = tmpSheet.getSheetName().toUpperCase().replace("-", "_");
+            if (!ACCEPTED_SHEET_NAMES.contains(tmpSheetName)) {
+                continue;
+            }
+            standardizedSheetName = tmpSheetName;
+            sheet = tmpSheet;
+
+            saveData(sheet.getRow(startCellAddress.getRow()), startCellAddress, stopCellAddress);
+            saveData(sheet.getRow(additionalStartCellAddress.getRow()), additionalStartCellAddress, additionalStopCellAddress);
+        }
+    }
+
+    /**
+     * Helper method, saves all data between stop cells
+     *
+     * @param tmpRow       starting row
+     * @param startAddress starting cell address
+     * @param stopAddress  stop cell address
+     */
+    private void saveData(Row tmpRow, CellAddress startAddress, CellAddress stopAddress) {
         while (tmpRow.getRowNum() <= stopAddress.getRow()) {
             results.add(buildFYResult(tmpRow, startAddress.getColumn()));
-
-            //set next row as the current one and continue loop
             tmpRow = sheet.getRow(tmpRow.getRowNum() + 1);
         }
-        SheetSpecifics sheetSpecifics = new SheetSpecifics(MEASURE, sheetName);
+        SheetSpecifics sheetSpecifics = new SheetSpecifics(MEASURE, standardizedSheetName);
         allResults.put(sheetSpecifics, results);
     }
 
