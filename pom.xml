@@ -10,7 +10,8 @@
 	</parent>
 	<groupId>copyExcel</groupId>
 	<artifactId>copyExcel</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
+	<packaging>jar</packaging>
 	<name>copyExcel</name>
 	<description>copyExcel</description>
 	<properties>
@@ -52,6 +53,19 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<classifier>spring-boot</classifier>
+							<mainClass>
+								copyExcel.copyExcel.CopyExcelApplication
+							</mainClass>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

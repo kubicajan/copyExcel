@@ -94,7 +94,7 @@ public class ReadFromExcelImpl implements ReadFromExcel {
      */
     private void openFile() {
         try {
-            FileInputStream file = new FileInputStream(new File("../" + READ_FROM_FILE));
+            FileInputStream file = new FileInputStream(new File(READ_FROM_FILE));
             XSSFWorkbook workbook = new XSSFWorkbook(file);
 
             readFile(workbook);

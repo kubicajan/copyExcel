@@ -84,14 +84,14 @@ public class WriteToExcelImpl implements WriteToExcel {
      */
     private void openExcel() {
         try {
-            FileInputStream file = new FileInputStream(new File("../" + WRITE_TO_FILE));
+            FileInputStream file = new FileInputStream(new File(WRITE_TO_FILE));
             workbook = new XSSFWorkbook(file);
 
             filterSheets();
 
             file.close();
 
-            FileOutputStream outputStream = new FileOutputStream("../" + WRITE_TO_FILE);
+            FileOutputStream outputStream = new FileOutputStream(WRITE_TO_FILE);
             workbook.write(outputStream);
             workbook.close();
 
