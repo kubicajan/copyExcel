@@ -39,7 +39,7 @@ public class ReadFromExcelImpl implements ReadFromExcel {
 
     //there is a lot of hidden sheets, the ones that we are interested in are named the same as  OPCO cells
     //from the second file
-    private static final Set<String> ACCEPTED_SHEET_NAMES = Set.of(
+    private  final Set<String> ACCEPTED_SHEET_NAMES = Set.of(
             "YL_BX",
             "YL_CZ",
             "YL_DE",
