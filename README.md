@@ -1,8 +1,8 @@
-###INTRODUCTION
+###INTRODUCTION###
 
 This app was created to ease the work of copying from many excel sheets to another. With correct configuration, it can be a very powerful ally! Just put excel files into the projects directory and run it!
 
-####Configuration
+####Configuration###
 The app itself does not need any configuration as it is right now. Should the need arise, here is how.
 Most of the action happens in directory `services`. In both `ReadFromExcelImpl` and `WriteToExcelImpl` you will find a number of constants - these are used for configuring the app.
 
