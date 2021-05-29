@@ -29,8 +29,8 @@ App writes into two sheets:
 -    *START_WRITING_FROM_CELL_COORDINATES_MMR_2* - defines where the writing starts for MMR_2 sheet
 -    *START_WRITING_FROM_CELL_COORDINATES_FY21* - defines where the writing starts for FY21 sheet
 
-    MEASURE_CELL_POSITION_IN_ROW - measure cell position, for filtering purposes
-    OPCO_CELL_POSITION_IN_ROW - opco cell position, also for filtering purposes
+-    *MEASURE_CELL_POSITION_IN_ROW* - measure cell position, for filtering purposes
+-    *OPCO_CELL_POSITION_IN_ROW* - opco cell position, also for filtering purposes
     
     
 ####Conclusion####
