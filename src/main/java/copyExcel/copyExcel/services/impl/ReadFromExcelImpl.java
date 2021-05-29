@@ -10,8 +10,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -68,14 +66,12 @@ public class ReadFromExcelImpl implements ReadFromExcel {
     private CellAddress additionalStartCellAddress;
     private CellAddress additionalStopCellAddress;
 
-    private final WriteToExcel writeToExcel;
 
-    @EventListener(ApplicationReadyEvent.class)
-    public void process() {
+    public Map<SheetSpecifics, ArrayList<FYResult>> process() {
         log.info("Starting to read from... " + READ_FROM_FILE);
         init();
         openFile();
-        writeToExcel.process(allResults);
+        return(allResults);
     }
 
     private void init() {
