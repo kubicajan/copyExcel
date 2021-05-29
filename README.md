@@ -3,6 +3,7 @@
 This app was created to ease the work of copying from many excel sheets to another. With correct configuration, it can be a very powerful ally! Just put excel files into the projects directory and run it!
 
 ####Configuration###
+
 The app itself does not need any configuration as it is right now. Should the need arise, here is how.
 Most of the action happens in directory `services`. In both `ReadFromExcelImpl` and `WriteToExcelImpl` you will find a number of constants - these are used for configuring the app.
 
@@ -32,10 +33,12 @@ App writes into two sheets:
     OPCO_CELL_POSITION_IN_ROW - opco cell position, also for filtering purposes
     
     
-####Conclusion
+####Conclusion####
+
 If all of these constants are configured correctly, you no longer need to worry yourself with copying ever again! Simply run the program and it will do it for you.
 
-####JAR
+####JAR####
+
 In case you are tired of opening your IDEA, you can simply run the command `mvn clean package` and take your JAR executable file (from the `target` directory) with you! Simply put it in the same directory as your two excels, double click and the magic will happen.
 
 Good luck!
