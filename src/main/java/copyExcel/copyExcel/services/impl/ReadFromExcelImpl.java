@@ -3,9 +3,10 @@ package copyExcel.copyExcel.services.impl;
 import copyExcel.copyExcel.models.FYResult;
 import copyExcel.copyExcel.models.SheetSpecifics;
 import copyExcel.copyExcel.services.ReadFromExcel;
-import copyExcel.copyExcel.services.WriteToExcel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellAddress;
@@ -71,7 +72,7 @@ public class ReadFromExcelImpl implements ReadFromExcel {
         log.info("Starting to read from... " + READ_FROM_FILE);
         init();
         openFile();
-        return(allResults);
+        return (allResults);
     }
 
     private void init() {
@@ -141,18 +142,27 @@ public class ReadFromExcelImpl implements ReadFromExcel {
 
     private FYResult buildFYResult(Row row, int address) {
         return FYResult.builder()
-                .january(row.getCell(address).toString())
-                .february(row.getCell(address + 1).toString())
-                .march(row.getCell(address + 2).toString())
-                .april(row.getCell(address + 3).toString())
-                .may(row.getCell(address + 4).toString())
-                .june(row.getCell(address + 5).toString())
-                .july(row.getCell(address + 6).toString())
-                .august(row.getCell(address + 7).toString())
-                .september(row.getCell(address + 8).toString())
-                .october(row.getCell(address + 9).toString())
-                .november(row.getCell(address + 10).toString())
-                .december(row.getCell(address + 11).toString())
+                .january(evaluateCell(row, address))
+                .february(evaluateCell(row, address + 1))
+                .march(evaluateCell(row, address + 2))
+                .april(evaluateCell(row, address + 3))
+                .may(evaluateCell(row, address + 4))
+                .june(evaluateCell(row, address + 5))
+                .july(evaluateCell(row, address + 6))
+                .august(evaluateCell(row, address + 7))
+                .september(evaluateCell(row, address + 8))
+                .october(evaluateCell(row, address + 9))
+                .november(evaluateCell(row, address + 10))
+                .december(evaluateCell(row, address + 11))
                 .build();
+    }
+
+    private String evaluateCell(Row row, int address) {
+        Cell cell = row.getCell(address);
+        if (cell.getCellType() == CellType.FORMULA) {
+            return cell.getCachedFormulaResultType().toString();
+        } else {
+            return cell.toString();
+        }
     }
 }
