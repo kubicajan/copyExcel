@@ -25,7 +25,7 @@ import java.util.Set;
 @Slf4j
 public class ReadFromExcelImpl implements ReadFromExcel {
 
-    final private String READ_FROM_FILE = "202104_MMR FY2021_EUR.xlsx";
+    final private String READ_FROM_FILE = "source.xlsx";
 
     final private String START_FROM_CELL_COORDINATES = "AP12";
     final private String STOP_AT_CELL_COORDINATE = "BA91";
