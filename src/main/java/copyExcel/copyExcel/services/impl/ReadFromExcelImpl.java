@@ -113,14 +113,14 @@ public class ReadFromExcelImpl implements ReadFromExcel {
         for (Sheet tmpSheet : workbook) {
             results = new ArrayList<>();
             tmpSheetName = tmpSheet.getSheetName().toUpperCase().replace("-", "_");
-            if (!ACCEPTED_SHEET_NAMES.contains(tmpSheetName)) {
-                continue;
-            }
-            standardizedSheetName = tmpSheetName;
-            sheet = tmpSheet;
 
-            saveData(sheet.getRow(startCellAddress.getRow()), startCellAddress, stopCellAddress);
-            saveData(sheet.getRow(additionalStartCellAddress.getRow()), additionalStartCellAddress, additionalStopCellAddress);
+            if (ACCEPTED_SHEET_NAMES.contains(tmpSheetName)) {
+                standardizedSheetName = tmpSheetName;
+                sheet = tmpSheet;
+
+                saveData(sheet.getRow(startCellAddress.getRow()), startCellAddress, stopCellAddress);
+                saveData(sheet.getRow(additionalStartCellAddress.getRow()), additionalStartCellAddress, additionalStopCellAddress);
+            }
         }
     }
 
@@ -160,9 +160,25 @@ public class ReadFromExcelImpl implements ReadFromExcel {
     private String evaluateCell(Row row, int address) {
         Cell cell = row.getCell(address);
         if (cell.getCellType() == CellType.FORMULA) {
-            return cell.getCachedFormulaResultType().toString();
+            return evaluateFormulaCell(cell);
         } else {
             return cell.toString();
         }
+    }
+
+    private String evaluateFormulaCell(Cell cell) {
+        switch (cell.getCachedFormulaResultType()) {
+            case _NONE:
+                break;
+            case NUMERIC:
+                return Double.toString(cell.getNumericCellValue());
+            case STRING:
+                return cell.getStringCellValue();
+            case BLANK:
+                return "";
+            case BOOLEAN:
+                return Boolean.toString(cell.getBooleanCellValue());
+        }
+        throw new IllegalArgumentException("Cell " + cell + " containing a formula has not fit any of the possible cases");
     }
 }
