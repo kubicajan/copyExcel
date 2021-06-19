@@ -1,11 +1,12 @@
 package copyExcel.copyExcel;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import copyExcel.copyExcel.management.ServiceManager;
+import copyExcel.copyExcel.services.ReadFromExcelImpl;
+import copyExcel.copyExcel.services.WriteToExcelImpl;
 
-@SpringBootApplication
 public class CopyExcelApplication {
     public static void main(String[] args) {
-        SpringApplication.run(CopyExcelApplication.class, args);
+        ServiceManager serviceManager = new ServiceManager(new ReadFromExcelImpl(), new WriteToExcelImpl());
+        serviceManager.process();
     }
 }

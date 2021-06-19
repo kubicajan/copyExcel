@@ -1,8 +1,8 @@
-package copyExcel.copyExcel.services.impl;
+package copyExcel.copyExcel.services;
 
+import copyExcel.copyExcel.models.Coordinate;
 import copyExcel.copyExcel.models.FYResult;
 import copyExcel.copyExcel.models.SheetSpecifics;
-import copyExcel.copyExcel.services.WriteToExcel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,18 +13,15 @@ import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Component
 @Slf4j
-public class WriteToExcelImpl implements WriteToExcel {
+public class WriteToExcelImpl {
 
     final private String WRITE_TO_FILE = "MMR FY2020_EUR.xlsx";
 
@@ -32,8 +29,11 @@ public class WriteToExcelImpl implements WriteToExcel {
     final private String MMR_2_SHEET_NAME = "MMR_2";
     final private String FY21_SHEET_NAME = "FY21";
 
-    final private String START_WRITING_FROM_CELL_COORDINATES_MMR_2 = "D2";
-    final private String START_WRITING_FROM_CELL_COORDINATES_FY21 = "F2";
+    //     private String START_WRITING_FROM_CELL_COORDINATES_MMR_2;
+//     = "D2";
+//     private String START_WRITING_FROM_CELL_COORDINATES_FY21;
+    private String START_WRITING_FROM_CELL_COORDINATES;
+//     "F2";
 
     final private int MEASURE_CELL_POSITION_IN_ROW = 0;
     final private int OPCO_CELL_POSITION_IN_ROW = 1;
@@ -41,6 +41,13 @@ public class WriteToExcelImpl implements WriteToExcel {
     private XSSFWorkbook workbook;
     private Sheet sheet;
     private int rowCounter;
+
+    private Set<String> ACCEPTED_SHEET_NAMES;
+//            Set.of(
+//            "FY21",
+//            "MMR_2"
+//    );
+
 
     /**
      * the amount of attributes in FYResult is the same as amount of lines that are skipped when filtering through rows (flipped writing)
@@ -56,20 +63,38 @@ public class WriteToExcelImpl implements WriteToExcel {
     private SheetSpecifics sheetSpecifics;
     private CellAddress startCellAddress;
 
-    public void process(Map<SheetSpecifics, ArrayList<FYResult>> results) {
-        init(results);
+    public void writeRegularly(Set<String> sheets, Coordinate coordinate) {
+        ACCEPTED_SHEET_NAMES = sheets;
+        startCellAddress = new CellAddress(coordinate.getBeginCoordinate());
+        for (String sheetName : sheets
+        ) {
+            sheet = workbook.getSheet(sheetName);
 
-        log.info("Reading successful!");
-        log.info("Writing to... " + WRITE_TO_FILE);
-        openExcel();
+            for (Map.Entry<SheetSpecifics, ArrayList<FYResult>> resultList : allResults.entrySet()) {
+                sheetSpecifics = resultList.getKey();
+                writeIntoSheetRegularly(resultList.getValue());
+            }
+        }
 
-        log.info("Writing successful!");
-        log.info("Process finished.");
     }
 
+    public void writeTransposed(Set<String> sheets, Coordinate coordinate) {
+        ACCEPTED_SHEET_NAMES = sheets;
+        startCellAddress = new CellAddress(coordinate.getBeginCoordinate());
+        for (String sheetName : sheets
+        ) {
+            sheet = workbook.getSheet(sheetName);
+            for (Map.Entry<SheetSpecifics, ArrayList<FYResult>> resultList : allResults.entrySet()) {
+                sheetSpecifics = resultList.getKey();
+                writeIntoSheetTransposed(resultList.getValue());
+            }
+        }
 
-    private void init(Map<SheetSpecifics, ArrayList<FYResult>> results) {
+    }
+
+    public void init(Map<SheetSpecifics, ArrayList<FYResult>> results, XSSFWorkbook sentWorkbook) {
         allResults = results;
+        workbook = sentWorkbook;
 
         FYResult r = FYResult.builder().build();
         amountOfAttributesInFYResult = r.getNumberOfAttributes();
@@ -79,76 +104,18 @@ public class WriteToExcelImpl implements WriteToExcel {
         amountOfFyResults = value.size();
     }
 
-    /**
-     * Method opens file for writing and initiates the process by calling filterSheets()
-     */
-    private void openExcel() {
-        try {
-            FileInputStream file = new FileInputStream(new File(WRITE_TO_FILE));
-            workbook = new XSSFWorkbook(file);
-
-            filterSheets();
-
-            file.close();
-
-            FileOutputStream outputStream = new FileOutputStream(WRITE_TO_FILE);
-            workbook.write(outputStream);
-            workbook.close();
-
-        } catch (
-                IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Method goes through all sheets in workbook and filters them. Then calls method decide() for each value saved
-     * in results.
-     */
-    private void filterSheets() {
-        for (Sheet tmpSheet : workbook) {
-            if (!tmpSheet.getSheetName().equals(MMR_2_SHEET_NAME) && !tmpSheet.getSheetName().equals(FY21_SHEET_NAME)) {
-                continue;
-            }
-
-            sheet = tmpSheet;
-            for (Map.Entry<SheetSpecifics, ArrayList<FYResult>> resultList : allResults.entrySet()) {
-                sheetSpecifics = resultList.getKey();
-                decide(resultList.getValue());
-            }
-        }
-    }
-
-    /**
-     * Method decided which method of writing should be used for each entry
-     *
-     * @param resultList List with FYResults.
-     */
-    private void decide(ArrayList<FYResult> resultList) {
-        switch (sheet.getSheetName()) {
-            case MMR_2_SHEET_NAME:
-                startCellAddress = new CellAddress(START_WRITING_FROM_CELL_COORDINATES_MMR_2);
-                writeIntoSheetHorizontally(resultList);
-                break;
-            case FY21_SHEET_NAME:
-                startCellAddress = new CellAddress(START_WRITING_FROM_CELL_COORDINATES_FY21);
-                writeIntoSheetLinearly(resultList);
-                break;
-        }
-    }
-
 
     /**
      * For each result in resultList, createCell() is called. Parameters sent ensure linear writing, each
      * result represents one row
      */
-    private void writeIntoSheetLinearly(ArrayList<FYResult> resultList) {
+    private void writeIntoSheetRegularly(ArrayList<FYResult> resultList) {
         Row tmpRow;
         int columnNumber;
         int counter = 0;
 
         for (FYResult result : resultList) {
-            tmpRow = sheet.getRow(filterRows(amountOfFyResults).getRowNum() + counter);
+            tmpRow = sheet.getRow(filterRows(1).getRowNum() + counter);
             columnNumber = startCellAddress.getColumn();
 
             createCell(result.getJanuary(), columnNumber, tmpRow);
@@ -172,7 +139,8 @@ public class WriteToExcelImpl implements WriteToExcel {
      * For each result in resultList, createCell() is called. Parameters sent ensure horizontal writing. Each result
      * represents one column.
      */
-    private void writeIntoSheetHorizontally(ArrayList<FYResult> resultList) {
+    //todo: change skipbys
+    private void writeIntoSheetTransposed(ArrayList<FYResult> resultList) {
         int counter = 0;
         int firstBatchRowNumber;
         Row firstBatchRow;
@@ -180,7 +148,7 @@ public class WriteToExcelImpl implements WriteToExcel {
 
         for (FYResult result : resultList) {
             rowCounter = 0;
-            firstBatchRow = filterRows(amountOfAttributesInFYResult);
+            firstBatchRow = filterRows(1);
             firstBatchRowNumber = firstBatchRow.getRowNum();
             columnNumber = startCellAddress.getColumn() + counter;
 
