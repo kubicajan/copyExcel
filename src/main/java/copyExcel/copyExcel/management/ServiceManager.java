@@ -138,8 +138,8 @@ public class ServiceManager {
         XSSFWorkbook workbook = new XSSFWorkbook(file);
 
         writeToExcel.init(results, workbook);
-        writeToExcel.writeRegularly(destinationFile.getRegularSheets(), destinationFile.getRegularCoordinate());
-        writeToExcel.writeTransposed(destinationFile.getTransposedSheets(), destinationFile.getTransposedCoordinate());
+        writeToExcel.initiateWriting(destinationFile.getRegularSheets(), destinationFile.getRegularCoordinate(), true);
+        writeToExcel.initiateWriting(destinationFile.getTransposedSheets(), destinationFile.getTransposedCoordinate(), false);
 
         file.close();
         FileOutputStream outputStream = new FileOutputStream(filename);

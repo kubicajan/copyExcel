@@ -30,7 +30,7 @@ public class WriteToExcel {
     private SheetSpecifics sheetSpecifics;
     private CellAddress startCellAddress;
 
-    public void writeRegularly(Set<String> sheets, Coordinate coordinate) {
+    public void initiateWriting(Set<String> sheets, Coordinate coordinate, boolean regular) {
         startCellAddress = new CellAddress(coordinate.getBeginCoordinate());
         String tmpSheetName;
 
@@ -39,28 +39,17 @@ public class WriteToExcel {
 
             if (sheets.contains(tmpSheetName)) {
                 sheet = workbook.getSheet(tmpSheet.getSheetName());
+                log.info("Writing to sheet... " + tmpSheetName);
+
 
                 for (Map.Entry<SheetSpecifics, ArrayList<FYResult>> resultList : allResults.entrySet()) {
                     sheetSpecifics = resultList.getKey();
-                    writeIntoSheetRegularly(resultList.getValue());
-                }
-            }
-        }
-    }
+                    if (regular) {
+                        writeIntoSheetRegularly(resultList.getValue());
+                    } else {
+                        writeIntoSheetTransposed(resultList.getValue());
 
-    public void writeTransposed(Set<String> sheets, Coordinate coordinate) {
-        startCellAddress = new CellAddress(coordinate.getBeginCoordinate());
-        String tmpSheetName;
-
-        for (Sheet tmpSheet : workbook) {
-            tmpSheetName = tmpSheet.getSheetName().replace(" ", "");
-
-            if (sheets.contains(tmpSheetName)) {
-                sheet = workbook.getSheet(tmpSheet.getSheetName());
-
-                for (Map.Entry<SheetSpecifics, ArrayList<FYResult>> resultList : allResults.entrySet()) {
-                    sheetSpecifics = resultList.getKey();
-                    writeIntoSheetTransposed(resultList.getValue());
+                    }
                 }
             }
         }
