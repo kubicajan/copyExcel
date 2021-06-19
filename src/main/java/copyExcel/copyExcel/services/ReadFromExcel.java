@@ -19,86 +19,57 @@ import java.util.*;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class ReadFromExcelImpl {
+public class ReadFromExcel {
 
-//    final private String READ_FROM_FILE = "source.xlsx";
-
-//    final private String START_FROM_CELL_COORDINATES = "AP12";
-//    final private String STOP_AT_CELL_COORDINATE = "BA91";
-//
-//    final private String ADDITIONAL_START_CELL_COORDINATES = "AP1067";
-//    final private String ADDITIONAL_STOP_CELL_COORDINATES = "BA1070";
-
-    // todo: actuals
+    // measure will probaly need to get changed every year.
     final private String MEASURE = "FY21_Actuals";
 
-
-    /**
-     * To not load hidden sheets, the ones that we are interested in are in the set. They are named the same as OPCO cells,
-     * which are used to filter while writing to file.
-     */
     private Set<String> acceptedSheetNames;
-
-    private Sheet sheet;
-    private String standardizedSheetName;
     private List<Coordinate> coordinates;
-
     private Map<SheetSpecifics, ArrayList<FYResult>> allResults;
     private ArrayList<FYResult> results;
-
-    private CellAddress startCellAddress;
-    private CellAddress stopCellAddress;
-
 
     public Map<SheetSpecifics, ArrayList<FYResult>> process(SourceFileSpecification sourceFile, XSSFWorkbook workbook) {
         log.info("Starting to read from... " + sourceFile);
         init(sourceFile);
         readFile(workbook);
-        return (allResults);
+        log.info("Reading finished");
+        return allResults;
     }
 
     private void init(SourceFileSpecification sourceFile) {
         allResults = new HashMap<>();
         acceptedSheetNames = sourceFile.getSheets();
         coordinates = sourceFile.getCoordinates();
-//        startCellAddress = new CellAddress(sourceFile.getCoordinates().getBeginCoordinate());
-//        stopCellAddress = new CellAddress(sourceFile.getCoordinates().getEndCoordinate());
     }
 
-
-    /**
-     * Method iterates through all sheets. Data from sheets that passed the filter are saved through method saveData().
-     *
-     * @param workbook current workbook
-     */
     private void readFile(XSSFWorkbook workbook) {
-        String tmpSheetName;
+        CellAddress startCellAddress;
+        CellAddress stopCellAddress;
+        Sheet sheet;
 
-        for (Sheet tmpSheet : workbook) {
+        for (String tmpSheetName : acceptedSheetNames) {
             results = new ArrayList<>();
-            tmpSheetName = tmpSheet.getSheetName().toUpperCase().replace("-", "_");
+            sheet = workbook.getSheet(tmpSheetName);
 
-            if (acceptedSheetNames.contains(tmpSheetName)) {
-                standardizedSheetName = tmpSheetName;
-                sheet = tmpSheet;
-                for (Coordinate coordinate : coordinates) {
-                    startCellAddress = new CellAddress(coordinate.getBeginCoordinate());
-                    stopCellAddress = new CellAddress(coordinate.getEndCoordinate());
-                    saveData(sheet.getRow(startCellAddress.getRow()), startCellAddress, stopCellAddress);
-                }
+            if (sheet == null) {
+                log.warn("Sheet " + tmpSheetName + " does not exist, skipping.");
+                continue;
+            }
+            log.info("Reading from sheet " + tmpSheetName);
 
+            for (Coordinate coordinate : coordinates) {
+                startCellAddress = new CellAddress(coordinate.getBeginCoordinate());
+                stopCellAddress = new CellAddress(coordinate.getEndCoordinate());
+                saveData(sheet, startCellAddress, stopCellAddress);
             }
         }
     }
 
-    /**
-     * Helper method, saves all data between stop cells
-     *
-     * @param tmpRow       starting row
-     * @param startAddress starting cell address
-     * @param stopAddress  stop cell address
-     */
-    private void saveData(Row tmpRow, CellAddress startAddress, CellAddress stopAddress) {
+    private void saveData(Sheet sheet, CellAddress startAddress, CellAddress stopAddress) {
+        Row tmpRow = sheet.getRow(startAddress.getRow());
+        String standardizedSheetName = sheet.getSheetName().toUpperCase().replace("-", "_");
+
         while (tmpRow.getRowNum() <= stopAddress.getRow()) {
             results.add(buildFYResult(tmpRow, startAddress.getColumn()));
             tmpRow = sheet.getRow(tmpRow.getRowNum() + 1);
@@ -146,6 +117,6 @@ public class ReadFromExcelImpl {
             case BOOLEAN:
                 return Boolean.toString(cell.getBooleanCellValue());
         }
-        throw new IllegalArgumentException("Cell " + cell + " containing a formula has not fit any of the possible cases");
+        throw new IllegalArgumentException("Cell " + cell + " containing a formula does not fit any of the possible cases");
     }
 }

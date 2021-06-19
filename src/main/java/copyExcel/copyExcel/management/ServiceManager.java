@@ -1,7 +1,7 @@
 package copyExcel.copyExcel.management;
 
 import copyExcel.copyExcel.models.*;
-import copyExcel.copyExcel.services.ReadFromExcelImpl;
+import copyExcel.copyExcel.services.ReadFromExcel;
 import copyExcel.copyExcel.services.WriteToExcelImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ import java.util.Set;
 @Slf4j
 public class ServiceManager {
 
-    private final ReadFromExcelImpl readFromExcel;
+    private final ReadFromExcel readFromExcel;
 
     private final WriteToExcelImpl writeToExcel;
 
@@ -37,18 +37,18 @@ public class ServiceManager {
         Map<SheetSpecifics, ArrayList<FYResult>> results;
 
         Set<String> sheetNamesForReading = Set.of(
-                "YL_BX",
-                "YL_CZ",
-                "YL_DE",
-                "YL_ES",
-                "YL_FR",
-                "YL_HU",
-                "YL_IT",
-                "YL_PL",
-                "YL_RO",
-                "YL_RU",
-                "YL_TR",
-                "YL_UK");
+                "YL-BX",
+                "YL-CZ",
+                "YL-DE",
+                "YL-ES",
+                "YL-FR",
+                "YL-HU",
+                "YL-IT",
+                "YL-PL",
+                "YL-RO",
+                "YL-RU",
+                "YL-TR",
+                "YL-UK");
 
 
         List<Coordinate> coordinates = new ArrayList<>();
@@ -126,7 +126,6 @@ public class ServiceManager {
 
         file = new FileInputStream(new File(filename));
         results = readFromExcel.process(sourceFile, workbook);
-        System.out.println(results);
 
         workbook.close();
 
