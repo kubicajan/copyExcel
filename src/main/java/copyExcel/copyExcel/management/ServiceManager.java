@@ -6,8 +6,6 @@ import copyExcel.copyExcel.services.WriteToExcel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -28,29 +26,61 @@ public class ServiceManager {
 
     private final WriteToExcel writeToExcel;
 
-    private final String OPEN_FILE = "source.xlsx";
+    private final Set<String> SHEET_NAMES_FOR_READING = Set.of(
+            "YL-BX",
+            "YL-CZ",
+            "YL-DE",
+            "YL-ES",
+            "YL-FR",
+            "YL-HU",
+            "YL-IT",
+            "YL-PL",
+            "YL-RO",
+            "YL-RU",
+            "YL-TR",
+            "YL-UK");
 
 
-    @EventListener(ApplicationReadyEvent.class)
     public void process() {
+        firstFilePair();
+        secondFilePair();
+    }
 
-        Map<SheetSpecifics, ArrayList<FYResult>> results;
+    private void secondFilePair() {
 
-        Set<String> sheetNamesForReading = Set.of(
-                "YL-BX",
-                "YL-CZ",
-                "YL-DE",
-                "YL-ES",
-                "YL-FR",
-                "YL-HU",
-                "YL-IT",
-                "YL-PL",
-                "YL-RO",
-                "YL-RU",
-                "YL-TR",
-                "YL-UK");
+        List<Coordinate> coordinates = new ArrayList<>();
+        String readFromFile = "source.xlsx";
+        coordinates.add(new Coordinate("AP597", "BA676"));
+        coordinates.add(new Coordinate("AP482", "BA485"));
+
+        SourceFileSpecification sourceFile = SourceFileSpecification
+                .builder()
+                .fileName(readFromFile)
+                .coordinates(coordinates)
+                .sheets(SHEET_NAMES_FOR_READING)
+                .build();
+
+        String writeToFile = "MMR_EUR - JPY.xlsx";
+        Set<String> transposedSheets = Set.of("MMR_2");
+        Coordinate transposedCoordinate = new Coordinate("D2", null);
+
+        Set<String> regularSheets = Set.of("FY21");
+        Coordinate regularCoordinate = new Coordinate("F2", null);
 
 
+        DestinationFileSpecification destinationFile = DestinationFileSpecification
+                .builder()
+                .fileName(writeToFile)
+                .transposedCoordinate(transposedCoordinate)
+                .regularCoordinate(regularCoordinate)
+                .transposedSheets(transposedSheets)
+                .regularSheets(regularSheets)
+                .build();
+
+        process(sourceFile, destinationFile);
+    }
+
+    private void firstFilePair() {
         List<Coordinate> coordinates = new ArrayList<>();
         String readFromFile = "source.xlsx";
         coordinates.add(new Coordinate("AP12", "BA91"));
@@ -60,9 +90,8 @@ public class ServiceManager {
                 .builder()
                 .fileName(readFromFile)
                 .coordinates(coordinates)
-                .sheets(sheetNamesForReading)
+                .sheets(SHEET_NAMES_FOR_READING)
                 .build();
-
 
         String writeToFile = "MMR FY2020_EUR.xlsx";
         Set<String> transposedSheets = Set.of("MMR_2");
@@ -81,18 +110,17 @@ public class ServiceManager {
                 .regularSheets(regularSheets)
                 .build();
 
-        processMe(sourceFile, destinationFile);
-
+        process(sourceFile, destinationFile);
     }
 
-    private void processMe(SourceFileSpecification sourceFile, DestinationFileSpecification destinationFile) {
+    private void process(SourceFileSpecification sourceFile, DestinationFileSpecification destinationFile) {
         Map<SheetSpecifics, ArrayList<FYResult>> results;
 
         try {
             log.info("Starting to read from... " + sourceFile.getFileName());
-
             results = readSourceFile(sourceFile);
             log.info("Reading finished");
+
             log.info("Starting to write to... " + destinationFile.getFileName());
             writeToDestinationFile(results, destinationFile);
             log.info("Writing finished");
@@ -129,7 +157,6 @@ public class ServiceManager {
         results = readFromExcel.process(sourceFile, workbook);
 
         workbook.close();
-
         file.close();
         return results;
     }

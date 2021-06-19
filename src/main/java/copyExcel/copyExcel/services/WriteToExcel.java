@@ -3,23 +3,19 @@ package copyExcel.copyExcel.services;
 import copyExcel.copyExcel.models.Coordinate;
 import copyExcel.copyExcel.models.FYResult;
 import copyExcel.copyExcel.models.SheetSpecifics;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Component
+@RequiredArgsConstructor
 @Slf4j
 public class WriteToExcel {
 
@@ -36,30 +32,38 @@ public class WriteToExcel {
 
     public void writeRegularly(Set<String> sheets, Coordinate coordinate) {
         startCellAddress = new CellAddress(coordinate.getBeginCoordinate());
+        String tmpSheetName;
 
-        for (String sheetName : sheets) {
-            sheet = workbook.getSheet(sheetName);
+        for (Sheet tmpSheet : workbook) {
+            tmpSheetName = tmpSheet.getSheetName().replace(" ", "");
 
-            for (Map.Entry<SheetSpecifics, ArrayList<FYResult>> resultList : allResults.entrySet()) {
-                sheetSpecifics = resultList.getKey();
-                writeIntoSheetRegularly(resultList.getValue());
+            if (sheets.contains(tmpSheetName)) {
+                sheet = workbook.getSheet(tmpSheet.getSheetName());
+
+                for (Map.Entry<SheetSpecifics, ArrayList<FYResult>> resultList : allResults.entrySet()) {
+                    sheetSpecifics = resultList.getKey();
+                    writeIntoSheetRegularly(resultList.getValue());
+                }
             }
         }
-
     }
 
     public void writeTransposed(Set<String> sheets, Coordinate coordinate) {
         startCellAddress = new CellAddress(coordinate.getBeginCoordinate());
+        String tmpSheetName;
 
-        for (String sheetName : sheets) {
-            sheet = workbook.getSheet(sheetName);
+        for (Sheet tmpSheet : workbook) {
+            tmpSheetName = tmpSheet.getSheetName().replace(" ", "");
 
-            for (Map.Entry<SheetSpecifics, ArrayList<FYResult>> resultList : allResults.entrySet()) {
-                sheetSpecifics = resultList.getKey();
-                writeIntoSheetTransposed(resultList.getValue());
+            if (sheets.contains(tmpSheetName)) {
+                sheet = workbook.getSheet(tmpSheet.getSheetName());
+
+                for (Map.Entry<SheetSpecifics, ArrayList<FYResult>> resultList : allResults.entrySet()) {
+                    sheetSpecifics = resultList.getKey();
+                    writeIntoSheetTransposed(resultList.getValue());
+                }
             }
         }
-
     }
 
     public void init(Map<SheetSpecifics, ArrayList<FYResult>> results, XSSFWorkbook sentWorkbook) {
