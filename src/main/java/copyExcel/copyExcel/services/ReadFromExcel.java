@@ -30,10 +30,8 @@ public class ReadFromExcel {
     private ArrayList<FYResult> results;
 
     public Map<SheetSpecifics, ArrayList<FYResult>> process(SourceFileSpecification sourceFile, XSSFWorkbook workbook) {
-        log.info("Starting to read from... " + sourceFile);
         init(sourceFile);
         readFile(workbook);
-        log.info("Reading finished");
         return allResults;
     }
 

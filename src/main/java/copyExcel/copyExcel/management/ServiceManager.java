@@ -2,7 +2,7 @@ package copyExcel.copyExcel.management;
 
 import copyExcel.copyExcel.models.*;
 import copyExcel.copyExcel.services.ReadFromExcel;
-import copyExcel.copyExcel.services.WriteToExcelImpl;
+import copyExcel.copyExcel.services.WriteToExcel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -26,7 +26,7 @@ public class ServiceManager {
 
     private final ReadFromExcel readFromExcel;
 
-    private final WriteToExcelImpl writeToExcel;
+    private final WriteToExcel writeToExcel;
 
     private final String OPEN_FILE = "source.xlsx";
 
@@ -89,9 +89,13 @@ public class ServiceManager {
         Map<SheetSpecifics, ArrayList<FYResult>> results;
 
         try {
+            log.info("Starting to read from... " + sourceFile.getFileName());
 
             results = readSourceFile(sourceFile);
+            log.info("Reading finished");
+            log.info("Starting to write to... " + destinationFile.getFileName());
             writeToDestinationFile(results, destinationFile);
+            log.info("Writing finished");
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -113,9 +117,6 @@ public class ServiceManager {
         FileOutputStream outputStream = new FileOutputStream(filename);
         workbook.write(outputStream);
         workbook.close();
-
-
-
     }
 
     private Map<SheetSpecifics, ArrayList<FYResult>> readSourceFile(SourceFileSpecification sourceFile) throws IOException {

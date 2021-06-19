@@ -21,19 +21,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Component
 @Slf4j
-public class WriteToExcelImpl {
-
-    final private String WRITE_TO_FILE = "MMR FY2020_EUR.xlsx";
-
-    // the result for MMR2 needs to be flipped horizontally, FY21 does not need to be flipped
-    final private String MMR_2_SHEET_NAME = "MMR_2";
-    final private String FY21_SHEET_NAME = "FY21";
-
-    //     private String START_WRITING_FROM_CELL_COORDINATES_MMR_2;
-//     = "D2";
-//     private String START_WRITING_FROM_CELL_COORDINATES_FY21;
-    private String START_WRITING_FROM_CELL_COORDINATES;
-//     "F2";
+public class WriteToExcel {
 
     final private int MEASURE_CELL_POSITION_IN_ROW = 0;
     final private int OPCO_CELL_POSITION_IN_ROW = 1;
@@ -42,32 +30,14 @@ public class WriteToExcelImpl {
     private Sheet sheet;
     private int rowCounter;
 
-    private Set<String> ACCEPTED_SHEET_NAMES;
-//            Set.of(
-//            "FY21",
-//            "MMR_2"
-//    );
-
-
-    /**
-     * the amount of attributes in FYResult is the same as amount of lines that are skipped when filtering through rows (flipped writing)
-     */
-    private int amountOfAttributesInFYResult;
-
-    /**
-     * The amount of results is the same as the amount of lines skipped when filtering rows (normal writing)
-     */
-    private int amountOfFyResults;
-
     private Map<SheetSpecifics, ArrayList<FYResult>> allResults;
     private SheetSpecifics sheetSpecifics;
     private CellAddress startCellAddress;
 
     public void writeRegularly(Set<String> sheets, Coordinate coordinate) {
-        ACCEPTED_SHEET_NAMES = sheets;
         startCellAddress = new CellAddress(coordinate.getBeginCoordinate());
-        for (String sheetName : sheets
-        ) {
+
+        for (String sheetName : sheets) {
             sheet = workbook.getSheet(sheetName);
 
             for (Map.Entry<SheetSpecifics, ArrayList<FYResult>> resultList : allResults.entrySet()) {
@@ -79,11 +49,11 @@ public class WriteToExcelImpl {
     }
 
     public void writeTransposed(Set<String> sheets, Coordinate coordinate) {
-        ACCEPTED_SHEET_NAMES = sheets;
         startCellAddress = new CellAddress(coordinate.getBeginCoordinate());
-        for (String sheetName : sheets
-        ) {
+
+        for (String sheetName : sheets) {
             sheet = workbook.getSheet(sheetName);
+
             for (Map.Entry<SheetSpecifics, ArrayList<FYResult>> resultList : allResults.entrySet()) {
                 sheetSpecifics = resultList.getKey();
                 writeIntoSheetTransposed(resultList.getValue());
@@ -95,27 +65,15 @@ public class WriteToExcelImpl {
     public void init(Map<SheetSpecifics, ArrayList<FYResult>> results, XSSFWorkbook sentWorkbook) {
         allResults = results;
         workbook = sentWorkbook;
-
-        FYResult r = FYResult.builder().build();
-        amountOfAttributesInFYResult = r.getNumberOfAttributes();
-
-        Map.Entry<SheetSpecifics, ArrayList<FYResult>> entry = results.entrySet().iterator().next();
-        ArrayList<FYResult> value = entry.getValue();
-        amountOfFyResults = value.size();
     }
 
-
-    /**
-     * For each result in resultList, createCell() is called. Parameters sent ensure linear writing, each
-     * result represents one row
-     */
     private void writeIntoSheetRegularly(ArrayList<FYResult> resultList) {
         Row tmpRow;
         int columnNumber;
         int counter = 0;
 
         for (FYResult result : resultList) {
-            tmpRow = sheet.getRow(filterRows(1).getRowNum() + counter);
+            tmpRow = sheet.getRow(filterRows().getRowNum() + counter);
             columnNumber = startCellAddress.getColumn();
 
             createCell(result.getJanuary(), columnNumber, tmpRow);
@@ -134,12 +92,6 @@ public class WriteToExcelImpl {
         }
     }
 
-
-    /**
-     * For each result in resultList, createCell() is called. Parameters sent ensure horizontal writing. Each result
-     * represents one column.
-     */
-    //todo: change skipbys
     private void writeIntoSheetTransposed(ArrayList<FYResult> resultList) {
         int counter = 0;
         int firstBatchRowNumber;
@@ -148,7 +100,7 @@ public class WriteToExcelImpl {
 
         for (FYResult result : resultList) {
             rowCounter = 0;
-            firstBatchRow = filterRows(1);
+            firstBatchRow = filterRows();
             firstBatchRowNumber = firstBatchRow.getRowNum();
             columnNumber = startCellAddress.getColumn() + counter;
 
@@ -168,28 +120,23 @@ public class WriteToExcelImpl {
         }
     }
 
-    /**
-     * Method filters through cells in sheet and returns first row that fits the criteria. As the excel file is sorted,
-     * this allows us to skip batches of data and return only the first row of the batch.
-     *
-     * @param skipBy the amount of rows contained in one batch, differs for horizontal and vertical writing.
-     * @return first row found that fits criteria.
-     */
-    private Row filterRows(int skipBy) {
+    private Row filterRows() {
         Row tmpRow = null;
         String measureCell = "";
         String OPCOCell = "";
         int rowCounter = 0;
 
         while (!measureCell.equals(sheetSpecifics.getMeasure()) ||
-                !OPCOCell.equals(sheetSpecifics.getOpco())
-        ) {
+                !OPCOCell.equals(sheetSpecifics.getOpco())) {
             tmpRow = sheet.getRow(startCellAddress.getRow() + rowCounter);
             measureCell = tmpRow.getCell(MEASURE_CELL_POSITION_IN_ROW).toString();
             OPCOCell = tmpRow.getCell(OPCO_CELL_POSITION_IN_ROW).toString();
-            rowCounter = rowCounter + skipBy;
+            rowCounter = rowCounter + 1;
         }
-        return tmpRow;
+        if (tmpRow != null) {
+            return tmpRow;
+        }
+        throw new IllegalArgumentException("No row fits the criteria");
     }
 
 
