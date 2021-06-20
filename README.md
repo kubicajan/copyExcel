@@ -12,12 +12,20 @@ together with them the whole process.
 The program is able to copy from a set of `coordinates` - pairs of cells that indicate the start and the end of the block to be copied (be careful in which order you write the pairs though, it will be copied in that order).
 
 Some sheets need to have the data `transposed`. Specify the name of the sheet and the starting cell and the program will take care of it. Same for the regular writing, of course.
-    
-####Conclusion####
-If all of these constants are configured correctly, you no longer need to worry yourself with copying ever again! Simply run the program and it will do it for you.
+
 
 ####JAR####
 
 In case you are tired of opening your IDEA, you can simply run the command `mvn clean package` and take your JAR executable file (from the `target` directory) with you! Simply put it in the same directory as your other excels, double click and the magic will happen.
+
+
+####LOGGING####
+For easier debugging and finding out what actually happened in the program, every action is outputted to a file `logFile.log`. This fil
+is automatically created when starting the program. 
+
+This solution was mainly implemented for the `jar solution`, but can be checked even when running the program through IDEA.
+
+####Conclusion####
+If all of these constants are configured correctly, you no longer need to worry yourself with copying ever again! Simply run the program and it will do it for you.
 
 Good luck!
