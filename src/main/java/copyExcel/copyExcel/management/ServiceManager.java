@@ -136,14 +136,14 @@ public class ServiceManager {
         try {
             log.info("Starting to read from... " + sourceFile.getFileName());
             results = readSourceFile(sourceFile);
-            log.info("Reading finished");
+            log.info("Reading from... " + sourceFile.getFileName() + "  finished" + "\n");
 
             log.info("Starting to write to... " + destinationFile.getFileName());
             writeToDestinationFile(results, destinationFile);
-            log.info("Writing finished");
+            log.info("Writing to... " + destinationFile.getFileName() + " finished" + "\n");
 
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Something went wrong.", e);
         }
     }
 
