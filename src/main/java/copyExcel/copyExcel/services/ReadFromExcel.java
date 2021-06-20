@@ -27,6 +27,11 @@ public class ReadFromExcel {
     private Map<SheetSpecifics, ArrayList<FYResult>> allResults;
     private ArrayList<FYResult> results;
 
+
+    /**
+     * Function that gets called from the outside and starts the whole flow
+     * @return function returns all lines read from the excel
+     */
     public Map<SheetSpecifics, ArrayList<FYResult>> process(SourceFileSpecification sourceFile, XSSFWorkbook workbook) {
         init(sourceFile);
         readFile(workbook);
@@ -39,6 +44,10 @@ public class ReadFromExcel {
         coordinates = sourceFile.getCoordinates();
     }
 
+
+    /**
+     * Method goes through sheets and initiates reading according to the coordinates
+     */
     private void readFile(XSSFWorkbook workbook) {
         CellAddress startCellAddress;
         CellAddress stopCellAddress;
@@ -62,6 +71,15 @@ public class ReadFromExcel {
         }
     }
 
+    /**
+     * Method start saving lines to a list, which gets saved as a value to map allResults. Its key
+     * is sheetSpecifics, which contains measure and opsco values used for identifying the correct
+     * lines to write to.
+     *
+     * It is needed to replace the "_" for "-" in sheet name, which gets saved to opsco property of SheetSpecifics
+     * object. We do this because the destination file has opsco fields named the same as the sheets of
+     * the source file, just with "-" instead of "_"
+     */
     private void saveData(Sheet sheet, CellAddress startAddress, CellAddress stopAddress) {
         Row tmpRow = sheet.getRow(startAddress.getRow());
         String standardizedSheetName = sheet.getSheetName().toUpperCase().replace("-", "_");
@@ -74,6 +92,10 @@ public class ReadFromExcel {
         allResults.put(sheetSpecifics, results);
     }
 
+
+    /**
+     * Helper method for building FYResultq
+     */
     private FYResult buildFYResult(Row row, int address) {
         return FYResult.builder()
                 .january(evaluateCell(row, address))
