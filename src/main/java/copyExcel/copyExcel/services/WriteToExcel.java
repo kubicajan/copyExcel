@@ -30,6 +30,15 @@ public class WriteToExcel {
     private SheetSpecifics sheetSpecifics;
     private CellAddress startCellAddress;
 
+
+    /**
+     * Method initiates the writing to the respected file. It first needs to get the correct sheet, which
+     * due to some weird naming in the destination files sometimes contains random spaces. Thus we need
+     * to go through every sheet, remove spaces and check, if the name is the name is the one we want.
+     *
+     * @param regular  decides, whether the data should be written transposed or regularly
+     *
+     */
     public void initiateWriting(Set<String> sheets, Coordinate coordinate, boolean regular) {
         startCellAddress = new CellAddress(coordinate.getBeginCoordinate());
         String tmpSheetName;
@@ -60,6 +69,12 @@ public class WriteToExcel {
         workbook = sentWorkbook;
     }
 
+
+    /**
+     * Method writes the results into a file, each FYResult represents one row and each parameter
+     * of the said FYResult represents one column.
+     *
+     */
     private void writeIntoSheetRegularly(ArrayList<FYResult> resultList) {
         Row tmpRow;
         int columnNumber;
@@ -85,6 +100,11 @@ public class WriteToExcel {
         }
     }
 
+    /**
+     * Method writes the results into a file, each FYResult represents one column and each parameter
+     * of the said FYResult represents one row.
+     *
+     */
     private void writeIntoSheetTransposed(ArrayList<FYResult> resultList) {
         int counter = 0;
         int firstBatchRowNumber;
@@ -113,6 +133,11 @@ public class WriteToExcel {
         }
     }
 
+
+    /**
+     * Method goes through all rows and looks for the row with Measure and OSCO cells that fit
+     * the ones we saved into the SheetSpecifics in allResults map.
+     */
     private Row filterRows() {
         Row tmpRow = null;
         String measureCell = "";

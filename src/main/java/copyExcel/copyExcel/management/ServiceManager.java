@@ -46,40 +46,15 @@ public class ServiceManager {
         secondFilePair();
     }
 
-    private void secondFilePair() {
 
-        List<Coordinate> coordinates = new ArrayList<>();
-        String readFromFile = "source.xlsx";
-        coordinates.add(new Coordinate("AP597", "BA676"));
-        coordinates.add(new Coordinate("AP482", "BA485"));
-
-        SourceFileSpecification sourceFile = SourceFileSpecification
-                .builder()
-                .fileName(readFromFile)
-                .coordinates(coordinates)
-                .sheets(SHEET_NAMES_FOR_READING)
-                .build();
-
-        String writeToFile = "MMR_EUR - JPY.xlsx";
-        Set<String> transposedSheets = Set.of("MMR_2");
-        Coordinate transposedCoordinate = new Coordinate("D2", null);
-
-        Set<String> regularSheets = Set.of("FY21");
-        Coordinate regularCoordinate = new Coordinate("F2", null);
-
-
-        DestinationFileSpecification destinationFile = DestinationFileSpecification
-                .builder()
-                .fileName(writeToFile)
-                .transposedCoordinate(transposedCoordinate)
-                .regularCoordinate(regularCoordinate)
-                .transposedSheets(transposedSheets)
-                .regularSheets(regularSheets)
-                .build();
-
-        process(sourceFile, destinationFile);
-    }
-
+    /**
+     * This method takes care of configuring the files, that will be processed.
+     * <p>
+     * Here the destinations for reading and writing are set, together with the coordinates and
+     * deciding which sheets will be used for transposed or regular writing.
+     * <p>
+     * At the end of the method, the whole process is initiated.
+     */
     private void firstFilePair() {
         List<Coordinate> coordinates = new ArrayList<>();
         String readFromFile = "source.xlsx";
@@ -113,6 +88,48 @@ public class ServiceManager {
         process(sourceFile, destinationFile);
     }
 
+
+    /**
+     * Very similarly to the firstFilePair() method, this one is also a configuration and initialization
+     * of the whole process. If there is a need to work with additional config, another method should be
+     * created
+     */
+    private void secondFilePair() {
+        List<Coordinate> coordinates = new ArrayList<>();
+        String readFromFile = "source.xlsx";
+        coordinates.add(new Coordinate("AP597", "BA676"));
+        coordinates.add(new Coordinate("AP482", "BA485"));
+
+        SourceFileSpecification sourceFile = SourceFileSpecification
+                .builder()
+                .fileName(readFromFile)
+                .coordinates(coordinates)
+                .sheets(SHEET_NAMES_FOR_READING)
+                .build();
+
+        String writeToFile = "MMR_EUR - JPY.xlsx";
+        Set<String> transposedSheets = Set.of("MMR_2");
+        Coordinate transposedCoordinate = new Coordinate("D2", null);
+
+        Set<String> regularSheets = Set.of("FY21");
+        Coordinate regularCoordinate = new Coordinate("F2", null);
+
+
+        DestinationFileSpecification destinationFile = DestinationFileSpecification
+                .builder()
+                .fileName(writeToFile)
+                .transposedCoordinate(transposedCoordinate)
+                .regularCoordinate(regularCoordinate)
+                .transposedSheets(transposedSheets)
+                .regularSheets(regularSheets)
+                .build();
+
+        process(sourceFile, destinationFile);
+    }
+
+    /**
+     * Method handles calls for reading and then writing data to its respected files
+     */
     private void process(SourceFileSpecification sourceFile, DestinationFileSpecification destinationFile) {
         Map<SheetSpecifics, ArrayList<FYResult>> results;
 
@@ -130,6 +147,9 @@ public class ServiceManager {
         }
     }
 
+    /**
+     * Method opens the source file and initiates reading, then closes it.
+     */
     private void writeToDestinationFile(Map<SheetSpecifics, ArrayList<FYResult>> results, DestinationFileSpecification destinationFile) throws IOException {
         FileInputStream file;
         String filename = destinationFile.getFileName();
@@ -147,6 +167,10 @@ public class ServiceManager {
         workbook.close();
     }
 
+
+    /**
+     * Method opens the source file and initiates reading, then closes it.
+     */
     private Map<SheetSpecifics, ArrayList<FYResult>> readSourceFile(SourceFileSpecification sourceFile) throws IOException {
         FileInputStream file;
         String filename = sourceFile.getFileName();
