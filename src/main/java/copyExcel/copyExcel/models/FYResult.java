@@ -6,20 +6,16 @@ import lombok.Data;
 @Builder
 @Data
 public class FYResult {
-    private String january;
-    private String february;
-    private String march;
-    private String april;
-    private String may;
-    private String june;
-    private String july;
-    private String august;
-    private String september;
-    private String october;
-    private String november;
-    private String december;
-
-    public int getNumberOfAttributes() {
-        return getClass().getDeclaredFields().length;
-    }
+    private double january;
+    private double february;
+    private double march;
+    private double april;
+    private double may;
+    private double june;
+    private double july;
+    private double august;
+    private double september;
+    private double october;
+    private double november;
+    private double december;
 }

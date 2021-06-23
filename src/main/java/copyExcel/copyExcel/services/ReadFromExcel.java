@@ -7,7 +7,6 @@ import copyExcel.copyExcel.models.SourceFileSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellAddress;
@@ -30,6 +29,7 @@ public class ReadFromExcel {
 
     /**
      * Function that gets called from the outside and starts the whole flow
+     *
      * @return function returns all lines read from the excel
      */
     public Map<SheetSpecifics, ArrayList<FYResult>> process(SourceFileSpecification sourceFile, XSSFWorkbook workbook) {
@@ -75,7 +75,7 @@ public class ReadFromExcel {
      * Method start saving lines to a list, which gets saved as a value to map allResults. Its key
      * is sheetSpecifics, which contains measure and opsco values used for identifying the correct
      * lines to write to.
-     *
+     * <p>
      * It is needed to replace the "_" for "-" in sheet name, which gets saved to opsco property of SheetSpecifics
      * object. We do this because the destination file has opsco fields named the same as the sheets of
      * the source file, just with "-" instead of "_"
@@ -113,27 +113,14 @@ public class ReadFromExcel {
                 .build();
     }
 
-    private String evaluateCell(Row row, int address) {
+    private double evaluateCell(Row row, int address) {
         Cell cell = row.getCell(address);
-        if (cell.getCellType() == CellType.FORMULA) {
-            return evaluateFormulaCell(cell);
-        } else {
-            return cell.toString();
-        }
-    }
 
-    private String evaluateFormulaCell(Cell cell) {
-        switch (cell.getCachedFormulaResultType()) {
-            case _NONE:
-                break;
+        switch (cell.getCellType()) {
+            case FORMULA:
+                return cell.getNumericCellValue();
             case NUMERIC:
-                return Double.toString(cell.getNumericCellValue());
-            case STRING:
-                return cell.getStringCellValue();
-            case BLANK:
-                return "";
-            case BOOLEAN:
-                return Boolean.toString(cell.getBooleanCellValue());
+                return Double.parseDouble(cell.toString());
         }
         throw new IllegalArgumentException("Cell " + cell + " containing a formula does not fit any of the possible cases");
     }

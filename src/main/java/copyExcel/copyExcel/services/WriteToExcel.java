@@ -165,11 +165,10 @@ public class WriteToExcel {
      * @param columnNumber Column number where new cell will be created
      * @param tmpRow       Row where new cell will be created
      */
-    private void createCell(String result, int columnNumber, Row tmpRow) {
+    private void createCell(Double result, int columnNumber, Row tmpRow) {
         Cell cell = tmpRow.createCell(columnNumber);
         cell.setCellValue(result);
     }
-
     /**
      * Helper method for horizontal writing, fetches row one higher every time it gets called.
      *
