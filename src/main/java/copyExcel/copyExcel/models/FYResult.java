@@ -6,16 +6,16 @@ import lombok.Data;
 @Builder
 @Data
 public class FYResult {
-    private double january;
-    private double february;
-    private double march;
-    private double april;
-    private double may;
-    private double june;
-    private double july;
-    private double august;
-    private double september;
-    private double october;
-    private double november;
-    private double december;
+    private Double january;
+    private Double february;
+    private Double march;
+    private Double april;
+    private Double may;
+    private Double june;
+    private Double july;
+    private Double august;
+    private Double september;
+    private Double october;
+    private Double november;
+    private Double december;
 }

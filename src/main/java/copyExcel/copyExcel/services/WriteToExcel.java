@@ -36,8 +36,7 @@ public class WriteToExcel {
      * due to some weird naming in the destination files sometimes contains random spaces. Thus we need
      * to go through every sheet, remove spaces and check, if the name is the name is the one we want.
      *
-     * @param regular  decides, whether the data should be written transposed or regularly
-     *
+     * @param regular decides, whether the data should be written transposed or regularly
      */
     public void initiateWriting(Set<String> sheets, Coordinate coordinate, boolean regular) {
         startCellAddress = new CellAddress(coordinate.getBeginCoordinate());
@@ -73,7 +72,6 @@ public class WriteToExcel {
     /**
      * Method writes the results into a file, each FYResult represents one row and each parameter
      * of the said FYResult represents one column.
-     *
      */
     private void writeIntoSheetRegularly(ArrayList<FYResult> resultList) {
         Row tmpRow;
@@ -103,7 +101,6 @@ public class WriteToExcel {
     /**
      * Method writes the results into a file, each FYResult represents one column and each parameter
      * of the said FYResult represents one row.
-     *
      */
     private void writeIntoSheetTransposed(ArrayList<FYResult> resultList) {
         int counter = 0;
@@ -167,8 +164,11 @@ public class WriteToExcel {
      */
     private void createCell(Double result, int columnNumber, Row tmpRow) {
         Cell cell = tmpRow.createCell(columnNumber);
-        cell.setCellValue(result);
+        if (result != null) {
+            cell.setCellValue(result);
+        }
     }
+
     /**
      * Helper method for horizontal writing, fetches row one higher every time it gets called.
      *

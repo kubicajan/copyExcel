@@ -113,7 +113,7 @@ public class ReadFromExcel {
                 .build();
     }
 
-    private double evaluateCell(Row row, int address) {
+    private Double evaluateCell(Row row, int address) {
         Cell cell = row.getCell(address);
 
         switch (cell.getCellType()) {
@@ -121,7 +121,12 @@ public class ReadFromExcel {
                 return cell.getNumericCellValue();
             case NUMERIC:
                 return Double.parseDouble(cell.toString());
+            case BLANK:
+                return null;
+            case STRING:
+                log.warn("Cell with type - STRING and value - '" + cell + "' has been processed, this might be a mistake.");
+                return Double.parseDouble(cell.toString());
         }
-        throw new IllegalArgumentException("Cell " + cell + " containing a formula does not fit any of the possible cases");
+        throw new IllegalArgumentException("Cell with value - '" + cell + "' and type - '" + cell.getCellType() + "' does not fit the accepted cases");
     }
 }
