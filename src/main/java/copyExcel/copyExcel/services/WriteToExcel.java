@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -22,7 +23,7 @@ public class WriteToExcel {
     final private int MEASURE_CELL_POSITION_IN_ROW = 0;
     final private int OPCO_CELL_POSITION_IN_ROW = 1;
 
-    private XSSFWorkbook workbook;
+    private Workbook workbook;
     private Sheet sheet;
     private int rowCounter;
 
@@ -63,7 +64,7 @@ public class WriteToExcel {
         }
     }
 
-    public void init(Map<SheetSpecifics, ArrayList<FYResult>> results, XSSFWorkbook sentWorkbook) {
+    public void init(Map<SheetSpecifics, ArrayList<FYResult>> results, Workbook sentWorkbook) {
         allResults = results;
         workbook = sentWorkbook;
     }

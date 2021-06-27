@@ -5,6 +5,7 @@ import copyExcel.copyExcel.services.ReadFromExcel;
 import copyExcel.copyExcel.services.WriteToExcel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
@@ -40,13 +41,6 @@ public class ServiceManager {
             "YL-TR",
             "YL-UK");
 
-
-    public void process() {
-        firstFilePair();
-        secondFilePair();
-    }
-
-
     /**
      * This method takes care of configuring the files, that will be processed.
      * <p>
@@ -55,7 +49,7 @@ public class ServiceManager {
      * <p>
      * At the end of the method, the whole process is initiated.
      */
-    private void firstFilePair() {
+    public void firstFilePair() {
         List<Coordinate> coordinates = new ArrayList<>();
         String readFromFile = "source.xlsx";
         coordinates.add(new Coordinate("AP12", "BA91"));
@@ -94,7 +88,7 @@ public class ServiceManager {
      * of the whole process. If there is a need to work with additional config, another method should be
      * created
      */
-    private void secondFilePair() {
+    public void secondFilePair() {
         List<Coordinate> coordinates = new ArrayList<>();
         String readFromFile = "source.xlsx";
         coordinates.add(new Coordinate("AP597", "BA676"));
@@ -155,7 +149,7 @@ public class ServiceManager {
         String filename = destinationFile.getFileName();
 
         file = new FileInputStream(new File(filename));
-        XSSFWorkbook workbook = new XSSFWorkbook(file);
+        Workbook workbook = new XSSFWorkbook(file);
 
         writeToExcel.init(results, workbook);
         writeToExcel.initiateWriting(destinationFile.getRegularSheets(), destinationFile.getRegularCoordinate(), true);
