@@ -15,6 +15,8 @@ import java.util.List;
 
 @Slf4j
 public class CopyExcelApplication {
+    private static String DATA_FILE = "./src/main/resources/data.json";
+
     public static void main(String[] args) {
         List<Request> requests = loadConfigurations();
         //todo: sometimes a bug happens: https://stackoverflow.com/questions/64116589/error-occurs-while-saving-the-package-the-part-xl-sharedstrings-xml-fail-to-b
@@ -39,7 +41,7 @@ public class CopyExcelApplication {
 
         try {
             requests = objectMapper.readValue(
-                    new File("data.json"),
+                    new File(DATA_FILE),
                     new TypeReference<>() {
                     });
 
