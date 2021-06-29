@@ -29,7 +29,8 @@ public class CopyExcelApplication {
     }
 
     private static void startThread(Request request) {
-
+        ServiceManager serviceManager = new ServiceManager(new ReadFromExcel(), new WriteToExcel());
+        new Thread(() -> serviceManager.process(request)).start();
     }
 
     private static List<Request> loadConfigurations() {

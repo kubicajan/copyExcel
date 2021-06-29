@@ -10,7 +10,6 @@ import java.util.Set;
 @NoArgsConstructor
 public class Request {
 
-
     //sourceFileSpecification
     private String sourceFileName;
     private List<Coordinate> readFromCoordinates;

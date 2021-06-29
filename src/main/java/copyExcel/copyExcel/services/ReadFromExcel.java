@@ -3,7 +3,6 @@ package copyExcel.copyExcel.services;
 import copyExcel.copyExcel.models.Coordinate;
 import copyExcel.copyExcel.models.FYResult;
 import copyExcel.copyExcel.models.SheetSpecifics;
-import copyExcel.copyExcel.models.SourceFileSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
@@ -18,7 +17,7 @@ import java.util.*;
 @Slf4j
 public class ReadFromExcel {
 
-    // measure will probaly need to get changed every year.
+    // measure will probably need to get changed every year.
     final private String MEASURE = "FY21_Actuals";
 
     private Set<String> acceptedSheetNames;
@@ -27,28 +26,16 @@ public class ReadFromExcel {
     private ArrayList<FYResult> results;
 
 
-    /**
-     * Function that gets called from the outside and starts the whole flow
-     *
-     * @return function returns all lines read from the excel
-     */
-    public Map<SheetSpecifics, ArrayList<FYResult>> process(SourceFileSpecification sourceFile, XSSFWorkbook workbook) {
-        init(sourceFile);
-        readFile(workbook);
-        return allResults;
-    }
-
-    private void init(SourceFileSpecification sourceFile) {
+    public void init(Set<String> readFromSheets, List<Coordinate> readFromCoordinates) {
         allResults = new HashMap<>();
-        acceptedSheetNames = sourceFile.getSheets();
-        coordinates = sourceFile.getCoordinates();
+        acceptedSheetNames = readFromSheets;
+        coordinates = readFromCoordinates;
     }
-
 
     /**
      * Method goes through sheets and initiates reading according to the coordinates
      */
-    private void readFile(XSSFWorkbook workbook) {
+    public Map<SheetSpecifics, ArrayList<FYResult>> readFile(XSSFWorkbook workbook) {
         CellAddress startCellAddress;
         CellAddress stopCellAddress;
         Sheet sheet;
@@ -69,6 +56,7 @@ public class ReadFromExcel {
                 saveData(sheet, startCellAddress, stopCellAddress);
             }
         }
+        return allResults;
     }
 
     /**
