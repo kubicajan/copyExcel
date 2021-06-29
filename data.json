@@ -1,0 +1,86 @@
+[
+  {
+    "sourceFileName": "source.xlsx",
+    "readFromCoordinates": [
+      {
+        "beginCoordinate": "AP12",
+        "endCoordinate": "BA91"
+      },
+      {
+        "beginCoordinate": "AP1067",
+        "endCoordinate": "BA1070"
+      }
+    ],
+    "readFromSheets": [
+      "YL-UK",
+      "YL-TR",
+      "YL-BX",
+      "YL-FR",
+      "YL-IT",
+      "YL-DE",
+      "YL-ES",
+      "YL-HU",
+      "YL-PL",
+      "YL-RU",
+      "YL-CZ",
+      "YL-RO"
+    ],
+    "destinationFileName": "MMR FY2020_EUR.xlsx",
+    "transposedCoordinateToStartWritingAt": {
+      "beginCoordinate": "D2",
+      "endCoordinate": null
+    },
+    "regularCoordinateToStartWritingAt": {
+      "beginCoordinate": "F2",
+      "endCoordinate": null
+    },
+    "transposedSheetNamesToWriteTo": [
+      "MMR_2"
+    ],
+    "regularSheetsNamesToWriteTo": [
+      "FY21"
+    ]
+  },
+  {
+    "sourceFileName": "source.xlsx",
+    "readFromCoordinates": [
+      {
+        "beginCoordinate": "AP597",
+        "endCoordinate": "BA676"
+      },
+      {
+        "beginCoordinate": "AP482",
+        "endCoordinate": "BA485"
+      }
+    ],
+    "readFromSheets": [
+      "YL-ES",
+      "YL-DE",
+      "YL-IT",
+      "YL-FR",
+      "YL-BX",
+      "YL-TR",
+      "YL-UK",
+      "YL-RO",
+      "YL-CZ",
+      "YL-RU",
+      "YL-PL",
+      "YL-HU"
+    ],
+    "destinationFileName": "MMR_EUR - JPY.xlsx",
+    "transposedCoordinateToStartWritingAt": {
+      "beginCoordinate": "D2",
+      "endCoordinate": null
+    },
+    "regularCoordinateToStartWritingAt": {
+      "beginCoordinate": "F2",
+      "endCoordinate": null
+    },
+    "transposedSheetNamesToWriteTo": [
+      "MMR_2"
+    ],
+    "regularSheetsNamesToWriteTo": [
+      "FY21"
+    ]
+  }
+]
