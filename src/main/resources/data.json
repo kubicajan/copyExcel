@@ -1,6 +1,6 @@
 [
   {
-    "sourceFileName": "source.xlsx",
+    "sourceFileName": "../source.xlsx",
     "readFromCoordinates": [
       {
         "beginCoordinate": "AP12",
@@ -25,7 +25,7 @@
       "YL-CZ",
       "YL-RO"
     ],
-    "destinationFileName": "MMR FY2020_EUR.xlsx",
+    "destinationFileName": "../MMR FY2020_EUR.xlsx",
     "transposedCoordinateToStartWritingAt": {
       "beginCoordinate": "D2",
       "endCoordinate": null
@@ -42,7 +42,7 @@
     ]
   },
   {
-    "sourceFileName": "source.xlsx",
+    "sourceFileName": "../source.xlsx",
     "readFromCoordinates": [
       {
         "beginCoordinate": "AP597",
@@ -67,7 +67,7 @@
       "YL-PL",
       "YL-HU"
     ],
-    "destinationFileName": "MMR_EUR - JPY.xlsx",
+    "destinationFileName": "../MMR_EUR - JPY.xlsx",
     "transposedCoordinateToStartWritingAt": {
       "beginCoordinate": "D2",
       "endCoordinate": null
