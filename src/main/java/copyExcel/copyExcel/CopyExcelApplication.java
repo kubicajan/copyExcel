@@ -19,20 +19,15 @@ public class CopyExcelApplication {
 
     public static void main(String[] args) {
         List<Request> requests = loadConfigurations();
-        //todo: sometimes a bug happens: https://stackoverflow.com/questions/64116589/error-occurs-while-saving-the-package-the-part-xl-sharedstrings-xml-fail-to-b
+        ServiceManager serviceManager = new ServiceManager(new ReadFromExcel(), new WriteToExcel());
 
         if (!requests.isEmpty()) {
             for (Request request : requests) {
-                startThread(request);
+                serviceManager.process(request);
             }
             return;
         }
         log.warn("No configurations were found.");
-    }
-
-    private static void startThread(Request request) {
-        ServiceManager serviceManager = new ServiceManager(new ReadFromExcel(), new WriteToExcel());
-        new Thread(() -> serviceManager.process(request)).start();
     }
 
     private static List<Request> loadConfigurations() {
